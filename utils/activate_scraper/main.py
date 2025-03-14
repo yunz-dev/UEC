@@ -1,6 +1,42 @@
 from playwright.sync_api import sync_playwright
 
 
+def getEventsFromPage(url: str) -> list:
+    """
+    Args:
+        url (str): The URL of the webpage to scrape.
+
+    Returns:
+        list: A list of href to all the events found
+        If no such div or anchor tags are found, an empty list is returned.
+    """
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+
+        page.goto(url)
+
+        page.wait_for_selector("div.listing__items.row")
+
+        div = page.query_selector("div.listing__items.row")
+        if div:
+            anchors = div.query_selector_all("a")
+            if anchors:
+                hrefs = [
+                    anchor.get_attribute("href")
+                    for anchor in anchors
+                    if anchor.get_attribute("href")
+                ]
+                return hrefs
+            else:
+                print("No anchor tags found in the div.")
+        else:
+            print("No div with class 'tile tile--event' found.")
+
+        browser.close()
+        return []
+
+
 def getPageCount(url: str) -> int:
     """
     This function navigates to the events page and finds the page count
@@ -87,6 +123,11 @@ def main():
     )
     if href:
         print(f"Found Apple Calendar link: {href}")
+    print(
+        getEventsFromPage(
+            "https://www.activateuts.com.au/events/?orderby=featured&page_num=1"
+        )
+    )
 
 
 if __name__ == "__main__":
