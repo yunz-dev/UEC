@@ -1,0 +1,6 @@
+dnspython==2.7.0
+greenlet==3.1.1
+playwright==1.50.0
+pyee==12.1.1
+pymongo==4.11.2
+typing_extensions==4.12.2
