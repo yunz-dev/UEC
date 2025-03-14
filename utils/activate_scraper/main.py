@@ -1,17 +1,51 @@
 from playwright.sync_api import sync_playwright
 
 
-def getIcsUrl(url: str) -> str:
+def getPageCount(url: str) -> int:
     """
-    This function navigates to a URL, clicks the 'Add to Calendar' button, waits for
-    any page updates, saves the HTML content to a file, and extracts the 'Apple Calendar'
-    link from the page.
+    This function navigates to the events page and finds the page count
 
     Args:
         url (str): The URL of the webpage to scrape.
 
     Returns:
-        str: The 'href' attribute of the anchor tag that contains the 'Apple Calendar' link.
+        int: the amount of pages of events
+        if nothing was found return -1
+    """
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+
+        page.goto(url)
+
+        page.wait_for_selector("div.col-xs-12.col-md-9")
+
+        div = page.query_selector("div.col-xs-12.col-md-9")
+        if div:
+            anchors = div.query_selector_all("a")
+            if anchors:
+                last_anchor_text = anchors[-1].text_content()
+                return int(last_anchor_text.strip()) if last_anchor_text else -1
+            else:
+                print("No anchor tags found in the div.")
+        else:
+            print("No div with classes 'col-xs-12 col-md-9' found.")
+
+        # Close the browser
+        browser.close()
+        return -1
+
+
+def getIcsUrl(url: str) -> str:
+    """
+    This function navigates to a URL, clicks the 'Add to Calendar' button, waits for
+    any page updates, and extracts the ICS link from the page.
+
+    Args:
+        url (str): The URL of the webpage to scrape.
+
+    Returns:
+        str: The 'href' attribute of the anchor tag that contains the 'ICS' link.
         If no such link is found, an empty string is returned.
     """
     with sync_playwright() as p:
@@ -54,6 +88,11 @@ def getIcsUrl(url: str) -> str:
 def main():
     href = getIcsUrl(
         "https://www.activateuts.com.au/events/discover-sydney-autumn-2025/"
+    )
+    print(
+        getPageCount(
+            "https://www.activateuts.com.au/events/?orderby=featured&page_num=1"
+        )
     )
     if href:
         print(f"Found Apple Calendar link: {href}")
