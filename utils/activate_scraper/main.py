@@ -31,7 +31,6 @@ def getPageCount(url: str) -> int:
         else:
             print("No div with classes 'col-xs-12 col-md-9' found.")
 
-        # Close the browser
         browser.close()
         return -1
 
@@ -49,17 +48,13 @@ def getIcsUrl(url: str) -> str:
         If no such link is found, an empty string is returned.
     """
     with sync_playwright() as p:
-        # Launch browser
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
 
-        # Navigate to the URL
         page.goto(url)
 
-        # Wait for the button with the span containing 'Add to calendar' to be visible
         page.wait_for_selector('button:has(span:text("Add to calendar"))')
 
-        # Click the button that contains the 'Add to calendar' span
         add_to_calendar_button = page.query_selector(
             'button:has(span:text("Add to calendar"))'
         )
@@ -69,19 +64,15 @@ def getIcsUrl(url: str) -> str:
         else:
             print("Button with 'Add to calendar' not found.")
 
-        # Optionally wait for the page to load after clicking the button (e.g., if it redirects or updates)
         page.wait_for_load_state("domcontentloaded")
 
-        # Use Playwright to find the anchor tag based on the nested elements
         anchor = page.query_selector('a:has(div:has(span:text("Apple Calendar")))')
         if anchor:
-            # Get the href attribute of the anchor tag
             href = anchor.get_attribute("href")
             return href
         else:
             print("No Apple Calendar link found.")
 
-        # Close the browser
         browser.close()
 
 
