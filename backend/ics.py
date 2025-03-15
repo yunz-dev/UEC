@@ -6,10 +6,10 @@ from pydantic import BaseModel
 from typing import List
 
 
-MAX_GAP_DAYS = 30
+MAX_ITERVAL_DAYS = 30
 
 
-class Gap(BaseModel):
+class Interval(BaseModel):
     start: datetime
     end: datetime
 
@@ -32,11 +32,11 @@ def merge_intervals(intervals: List[List[datetime]]) -> List[List[datetime]]:
     return res + [cur]
 
 
-def find_gaps(ics_link: str) -> List[Gap]:
-    all_gaps = requests.get(ics_link)
-    if all_gaps.status_code != 200:
+def find_clashes(ics_link: str) -> List[Interval]:
+    res = requests.get(ics_link)
+    if res.status_code != 200:
         return []
-    content = all_gaps.content.decode()
+    content = res.content.decode()
     cal: Calendar = Calendar.from_ical(content)
     intervals = []
     max_end = None
@@ -48,9 +48,9 @@ def find_gaps(ics_link: str) -> List[Gap]:
             today = datetime.now().date()
             max_end = day.replace(
                 year=today.year, month=today.month, day=today.day)
-            max_end += timedelta(days=MAX_GAP_DAYS)
+            max_end += timedelta(days=MAX_ITERVAL_DAYS)
         if day > max_end:
             continue
         intervals.append([start, end])
-    all_gaps = merge_intervals(intervals)
-    return [Gap(start=s, end=e) for s, e in all_gaps]
+    all_intervals = merge_intervals(intervals)
+    return [Interval(start=s, end=e) for s, e in all_intervals]
