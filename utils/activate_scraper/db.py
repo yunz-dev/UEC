@@ -15,7 +15,7 @@ def get_db():
 
 def add_event(event_data):
     db = get_db()
-    event_data["categories"] = Categoriser.categorise(event_data["summary"])
+    event_data["category"] = Categoriser.categorise(event_data["summary"])
     result = db.events.insert_one(event_data)
     return str(result.inserted_id)
 
@@ -27,6 +27,7 @@ def upsert_event(event_data: EventData):
 
     result = db.events.update_one(
         {
+            "category": event_data.category,
             "summary": event_data.summary,
             "description": event_data.description,
         },

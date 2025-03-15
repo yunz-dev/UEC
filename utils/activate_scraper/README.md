@@ -8,6 +8,9 @@ python3 script that goes through all the pages in [Activate UTS Event's Page](ht
 ```bash
 MONGO_URI #
 ```
+```bash
+GOOGLE_API_KEY #
+```
 ### install dependencies
 `pip install -r requirements.txt`
 ### install gemini libraries
