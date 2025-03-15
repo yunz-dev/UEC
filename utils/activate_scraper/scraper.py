@@ -7,34 +7,65 @@ def getEventsFromPage(url: str) -> list:
         url (str): The URL of the webpage to scrape.
 
     Returns:
-        list: A list of href to all the events found
-        If no such div or anchor tags are found, an empty list is returned.
+        list: A list of hrefs to all the events found that match the criteria.
     """
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
 
         page.goto(url)
-
         page.wait_for_selector("div.listing__items.row")
 
         div = page.query_selector("div.listing__items.row")
+        hrefs = []
+
         if div:
             anchors = div.query_selector_all("a")
-            if anchors:
-                hrefs = [
-                    anchor.get_attribute("href")
-                    for anchor in anchors
-                    if anchor.get_attribute("href")
-                ]
-                return hrefs
-            else:
-                print("No anchor tags found in the div.")
-        else:
-            print("No div with class 'tile tile--event' found.")
+            for anchor in anchors:
+                # Check if the anchor contains a div that contains an img
+                if anchor.query_selector("div img"):
+                    href = anchor.get_attribute("href")
+                    if href and href.startswith("/events/"):
+                        hrefs.append(href)
 
         browser.close()
-        return []
+        return hrefs
+
+
+# def getEventsFromPage(url: str) -> list:
+#     """
+#     Args:
+#         url (str): The URL of the webpage to scrape.
+#
+#     Returns:
+#         list: A list of href to all the events found
+#         If no such div or anchor tags are found, an empty list is returned.
+#     """
+#     with sync_playwright() as p:
+#         browser = p.chromium.launch(headless=True)
+#         page = browser.new_page()
+#
+#         page.goto(url)
+#
+#         page.wait_for_selector("div.listing__items.row")
+#
+#         div = page.query_selector("div.listing__items.row")
+#         if div:
+#             anchors = div.query_selector_all("a")
+#             if anchors:
+#                 hrefs = [
+#                     anchor.get_attribute("href")
+#                     for anchor in anchors
+#                     if anchor.get_attribute("href")
+#                 ]
+#                 return hrefs
+#             else:
+#                 print("No anchor tags found in the div.")
+#         else:
+#             print("No div with class 'tile tile--event' found.")
+#
+#         browser.close()
+#         return []
 
 
 def getPageCount(url: str) -> int:
