@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from typing import List
 
 
-MAX_ITERVAL_DAYS = 30
+MAX_INTERVAL_DAYS = 30
 
 
 class Interval(BaseModel):
@@ -48,7 +48,7 @@ def find_clashes(ics_link: str) -> List[Interval]:
             today = datetime.now().date()
             max_end = day.replace(
                 year=today.year, month=today.month, day=today.day)
-            max_end += timedelta(days=MAX_ITERVAL_DAYS)
+            max_end += timedelta(days=MAX_INTERVAL_DAYS)
         if day > max_end:
             continue
         intervals.append([start, end])
