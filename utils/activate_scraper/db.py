@@ -1,4 +1,5 @@
 from datetime import datetime
+from os import environ
 
 from bson.objectid import ObjectId
 from model import EventData
@@ -6,7 +7,7 @@ from pymongo import MongoClient
 
 
 def get_db():
-    client = MongoClient("mongodb://localhost:27017/")
+    client = MongoClient(environ["MONGO_URI"])
     db = client["app"]
     return db
 
@@ -20,12 +21,10 @@ def add_event(event_data):
 def upsert_event(event_data: EventData):
     db = get_db()
     event_dict = event_data.dict()
-
-    event_dict["updated_at"] = datetime.utcnow()
+    # event_dict["updated_at"] = datetime.utcnow()
 
     result = db.events.update_one(
         {
-            "date": event_data.date,
             "summary": event_data.summary,
             "description": event_data.description,
         },
