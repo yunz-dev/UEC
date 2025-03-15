@@ -1,4 +1,4 @@
-from datetime import date, datetime, UTC
+from datetime import datetime, timezone
 from os import getenv
 
 from fastapi import FastAPI, HTTPException
@@ -44,8 +44,8 @@ users = db["users"]
 
 def event_clashes(event: dict, clashes: List[Interval]):
     for clash in clashes:
-        s = clash.start.astimezone(UTC).replace(tzinfo=None)
-        e = clash.end.astimezone(UTC).replace(tzinfo=None)
+        s = clash.start.astimezone(timezone.utc).replace(tzinfo=None)
+        e = clash.end.astimezone(timezone.utc).replace(tzinfo=None)
         if event["start_time"] < e and s < event["end_time"]:
             return True
     return False
