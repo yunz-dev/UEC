@@ -6,7 +6,6 @@ from pydantic import BaseModel
 class EventData(BaseModel):
     start_time: datetime
     end_time: datetime
-    date: date
     cost: int
     category: list[str]
     summary: str
