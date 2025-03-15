@@ -1,23 +1,30 @@
+from cal import event_adapter, extract_event_data
+from db import upsert_event
 from scraper import getEventsFromPage, getIcsUrl, getPageCount
 
-
-def main():
-    href = getIcsUrl(
-        "https://www.activateuts.com.au/events/discover-sydney-autumn-2025/"
-    )
-    print(
-        getPageCount(
-            "https://www.activateuts.com.au/events/?orderby=featured&page_num=1"
-        )
-    )
-    if href:
-        print(f"Found Apple Calendar link: {href}")
-    print(
-        getEventsFromPage(
-            "https://www.activateuts.com.au/events/?orderby=featured&page_num=1"
-        )
-    )
-
-
+ACTIVATE_UTS = "https://www.activateuts.com.au"
+UTS_EVENT_PAGE = "https://www.activateuts.com.au/events"
+PAGE_INCREMENT = "/?orderby=featured&page_num="
 if __name__ == "__main__":
-    main()
+    print("Finding Page Count...", end="")
+    pages = getPageCount(UTS_EVENT_PAGE)
+    print(pages)
+    event_pages = []
+    print("Finding Events...")
+    for i in range(1, pages + 1):
+        print("searching page: ", i)
+        event_pages += getEventsFromPage(UTS_EVENT_PAGE + PAGE_INCREMENT + str(i))
+    print("\n", event_pages, "\n")
+    for event_page in event_pages:
+        url = ACTIVATE_UTS + event_page
+
+        print(UTS_EVENT_PAGE + event_page)
+        ics = getIcsUrl(url)
+
+        cal_event = extract_event_data(ics)
+
+        event = event_adapter(cal_event, url)
+
+        print("upserting:", event.summary)
+        upsert_event(event)
+    print("SUCCESS!")
