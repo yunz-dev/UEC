@@ -1,0 +1,45 @@
+.App {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.calendar-container {
+  margin-top: 20px;
+}
+
+.event-card {
+  margin-bottom: 16px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #90caf9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1976d2;
+}
+
+/* Drag and drop styles */
+.drag-active {
+  border-color: #1976d2 !important;
+  background-color: rgba(25, 118, 210, 0.1) !important;
+}
