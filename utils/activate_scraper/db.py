@@ -1,3 +1,4 @@
+from categoriser import Categoriser
 from datetime import datetime
 from os import environ
 
@@ -14,6 +15,7 @@ def get_db():
 
 def add_event(event_data):
     db = get_db()
+    event_data["categories"] = Categoriser.categorise(event_data["summary"])
     result = db.events.insert_one(event_data)
     return str(result.inserted_id)
 
@@ -76,8 +78,9 @@ def delete_event(event_id):
 
 
 if __name__ == "__main__":
+    Categoriser._instance_ = Categoriser()
     event_id = add_event(
-        {"name": "Tech Conference", "date": "2025-05-10", "location": "Sydney"}
+        {"name": "Tech Conference", "date": "2025-05-10", "location": "Sydney", "summary": "a sporting event"}
     )
     print("Added Event ID:", event_id)
 
