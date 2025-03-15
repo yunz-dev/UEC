@@ -15,7 +15,7 @@ if __name__ == "__main__":
         print("searching page: ", i)
         event_pages += getEventsFromPage(UTS_EVENT_PAGE + PAGE_INCREMENT + str(i))
     print("\n", event_pages, "\n")
-    for event_page in event_pages:
+    for i, event_page in enumerate(event_pages):
         url = ACTIVATE_UTS + event_page
 
         print(UTS_EVENT_PAGE + event_page)
@@ -25,6 +25,6 @@ if __name__ == "__main__":
 
         event = event_adapter(cal_event, url)
 
-        print("upserting:", event.summary)
+        print(i + 1, "/", len(event_pages), "upserting:", event.summary)
         upsert_event(event)
     print("SUCCESS!")
