@@ -196,7 +196,7 @@ function Home() {
             mb: 4,
           }}
         >
-          UniSync
+          LectureFree
         </Typography>
         
         <Typography 
