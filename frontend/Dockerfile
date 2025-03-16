@@ -9,6 +9,12 @@ COPY package.json package-lock.json ./
 # Install dependencies
 RUN npm install
 
+RUN apt-get update && apt-get install -y curl sudo && \
+    curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && \
+    dpkg -i cloudflared.deb && \
+    rm cloudflared.deb && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # Copy the entire project
 COPY . .
 
