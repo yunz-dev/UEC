@@ -1,41 +1,16 @@
-import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import './App.css';
+import HomePage from './pages/HomePage';
+import CalendarPage from './pages/CalendarPage';
 
-// Components
-import Navbar from './components/Navbar';
-import Home from './pages/Home';
-import Calendar from './pages/Calendar';
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Router>
-        <div className="App">
-          <Navbar />
-          <div className="content">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/calendar" element={<Calendar />} />
-            </Routes>
-          </div>
-        </div>
-      </Router>
-    </ThemeProvider>
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/calendar" element={<CalendarPage />} />
+      </Routes>
+    </Router>
   );
 }
 

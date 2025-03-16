@@ -43,3 +43,15 @@
   border-color: #1976d2 !important;
   background-color: rgba(25, 118, 210, 0.1) !important;
 }
+
+.rbc-calendar {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.rbc-event {
+  background-color: #1976d2;
+  color: white;
+}

@@ -7,6 +7,7 @@ const API_URL = 'http://localhost:8000';
  * @param {Object} params - Query parameters
  * @param {Date} params.start_time - Start time to filter events
  * @param {Date} params.end_time - End time to filter events
+ * @param {string} params.ics_url - Optional ICS URL to filter out clashing events
  * @returns {Promise<Array>} List of events
  */
 export const getEvents = async (params = {}) => {

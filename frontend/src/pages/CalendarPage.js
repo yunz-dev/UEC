@@ -84,6 +84,7 @@ function Calendar() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [status, setStatus] = useState('');
+  const [icsUrl, setIcsUrl] = useState(''); // Add state for ICS URL input
 
   const container = useRef(null);
   const containerNav = useRef(null);
@@ -163,106 +164,61 @@ function Calendar() {
     .sort((a, b) => a.startTime - b.startTime); // Sort by start time for better rendering
   };
 
-  // Mock events generator function
-  const generateMockEvents = () => {
-    const today = new Date();
-    const monday = new Date(today);
-    // Set to Monday of current week
-    monday.setDate(today.getDate() - today.getDay() + 1);
-
-    const events = [];
-    const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-
-    // Generate some events for each day
-    for (let day = 0; day < 5; day++) {
-      const eventsCount = 2 + Math.floor(Math.random() * 3); // 2-4 events per day
-
-      for (let i = 0; i < eventsCount; i++) {
-        const startHour = 9 + Math.floor(Math.random() * 8); // Between 9 AM and 5 PM
-        const startMin = Math.random() > 0.5 ? 0 : 30; // Either on the hour or half hour
-
-        const eventDate = new Date(monday);
-        eventDate.setDate(monday.getDate() + day);
-        eventDate.setHours(startHour, startMin, 0, 0);
-
-        const endDate = new Date(eventDate);
-        const duration = 1 + Math.floor(Math.random() * 2); // 1-2 hours
-        endDate.setHours(eventDate.getHours() + duration);
-
-        events.push({
-          id: `event-${day}-${i}`,
-          title: `${days[day]} Event ${i + 1}`,
-          description: `This is a mock event for ${days[day]}`,
-          location: Math.random() > 0.3 ? `Room ${100 + i}` : '',
-          start_time: eventDate.toISOString(),
-          end_time: endDate.toISOString()
-        });
-      }
-    }
-
-    return events;
-  };
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        // Check Local Storage
-        const storedEvents = localStorage.getItem('calendarEvents');
-        const icsUrl = localStorage.getItem('calendarIcsUrl');
-        const fileName = localStorage.getItem('calendarFileName');
+        console.log("Fetching events from backend...");
+        const startDate = new Date();
+        const endDate = new Date();
+        endDate.setDate(startDate.getDate() + 30);
 
-        let fetchedEvents = [];
-
-        if (storedEvents) {
-          try {
-            const parsedEvents = JSON.parse(storedEvents);
-            setStatus(`Displaying calendar file: ${fileName || 'Unknown file'}`);
-            fetchedEvents = parsedEvents;
-          } catch (error) {
-            console.error("Error parsing stored events:", error);
-            setError("Failed to parse stored calendar data.");
-
-            // Clear the invalid data
-            localStorage.removeItem('calendarEvents');
-
-            // Fall back to mock data
-            fetchedEvents = generateMockEvents();
-          }
-        } else if (icsUrl) {
-          // If we have an ICS URL, use it to fetch events
-          setStatus(`Fetching calendar from URL: ${icsUrl}`);
-
-          try {
-            // Import API service to fetch events from ICS URL
-            const { getEventsFromIcsUrl } = await import('../services/api');
-            fetchedEvents = await getEventsFromIcsUrl(icsUrl);
-
-            if (!fetchedEvents || fetchedEvents.length === 0) {
-              setStatus("No events found in this calendar URL. Using example data instead.");
-              fetchedEvents = generateMockEvents();
-            } else {
-              setStatus(`Displaying ${fetchedEvents.length} events from: ${icsUrl}`);
-            }
-          } catch (error) {
-            console.error("Failed to fetch from ICS URL:", error);
-            setError(`Failed to fetch calendar data: ${error.message}`);
-            fetchedEvents = generateMockEvents();
-          }
-        } else {
-          // If no calendar input, use mock data
-          setStatus("No calendar provided. Showing example data.");
-          fetchedEvents = generateMockEvents();
+        const storedIcsUrl = localStorage.getItem('calendarIcsUrl') || '';
+        
+        const apiUrl = process.env.REACT_APP_API_URL || "https://uec-hb09.onrender.com";
+        
+        let fetchUrl = `${apiUrl}/events?start_time=${startDate.toISOString()}`;
+        
+        if (storedIcsUrl) {
+          const encodedIcsUrl = encodeURIComponent(storedIcsUrl.trim());
+          fetchUrl += `&ics_url=${encodedIcsUrl}`;
+          console.log("Fetching with ICS URL:", storedIcsUrl);
+          setStatus(`Fetching events from ICS URL: ${storedIcsUrl}`);
+        }
+        
+        console.log("Fetch URL:", fetchUrl);
+        
+        const response = await fetch(fetchUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+          // Adding these options can help with CORS during development
+          mode: 'cors',
+          credentials: 'same-origin'
+        });
+        
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Invalid response format: Expected JSON");
         }
 
-        // Transform events for calendar display
-        const calendarEvents = transformEventsForCalendar(fetchedEvents);
-        setEvents(calendarEvents);
+        const data = await response.json();
+        console.log("Fetched events from backend:", data.events);
 
+        if (Array.isArray(data.events) && data.events.length > 0) {
+          setStatus(`Successfully loaded ${data.events.length} events`);
+          const calendarEvents = transformEventsForCalendar(data.events);
+          setEvents(calendarEvents);
+        } else {
+          console.log("No events found, using mock data");
+          setStatus("No events found in database. Showing example data.");
+          const mockEvents = transformEventsForCalendar(generateMockEvents());
+          setEvents(mockEvents);
+        }
       } catch (error) {
-        console.error('Error loading calendar events:', error);
-        setError(`Failed to load events: ${error.message}`);
-
-        // Use mock data if there's an error
+        console.error("Error fetching events:", error);
+        setError(`Failed to fetch events: ${error.message}`);
         const mockEvents = transformEventsForCalendar(generateMockEvents());
         setEvents(mockEvents);
       } finally {
@@ -282,6 +238,15 @@ function Calendar() {
     }, 100);
   }, []);
 
+  const handleIcsUrlSubmit = (e) => {
+    e.preventDefault();
+    if (icsUrl) {
+      localStorage.setItem('calendarIcsUrl', icsUrl);
+      setStatus(`ICS URL saved. Refreshing calendar...`);
+      window.location.reload();
+    }
+  };
+
   const currentHour = new Date().getHours();
   const currentMinute = new Date().getMinutes();
   const currentTimeRow = ((currentHour - 7) * 2) + (currentMinute >= 30 ? 3 : 2);
@@ -289,6 +254,32 @@ function Calendar() {
   return (
     <div className="mt-8 w-full max-w-6xl mx-auto px-4">
       <h1 className="text-2xl font-bold text-center mb-4">Your Calendar</h1>
+
+      {/* Add form for ICS URL input */}
+      <div className="mb-6">
+        <form onSubmit={handleIcsUrlSubmit} className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-grow">
+            <label htmlFor="ics-url" className="sr-only">Calendar URL</label>
+            <input
+              type="text"
+              id="ics-url"
+              value={icsUrl}
+              onChange={(e) => setIcsUrl(e.target.value)}
+              placeholder="Paste your iCal URL here (e.g., https://timetable.sydney.edu.au/...)"
+              className="px-3 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <button 
+            type="submit"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Load Calendar
+          </button>
+        </form>
+        <p className="mt-1 text-sm text-gray-500">
+          Enter your iCal URL to display your calendar events
+        </p>
+      </div>
 
       {status && (
         <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-md p-2 mb-4 text-center">

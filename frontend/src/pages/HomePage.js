@@ -51,11 +51,9 @@ function Home() {
     
     try {
       if (uploadMethod === "link") {
-        // Process URL
         setStatus("Fetching calendar from URL");
         const url = inputRef.current.value;
         
-        // Validate URL format
         try {
           new URL(url); // This will throw if URL is invalid
         } catch(e) {
@@ -64,14 +62,12 @@ function Home() {
           return;
         }
         
-        // Store the URL for use on the calendar page
         localStorage.setItem('calendarIcsUrl', url);
         
         // Import API function here to avoid circular imports
         const { getEventsFromIcsUrl } = await import('../services/api');
         
         try {
-          // Test fetch the events to validate the URL works
           const events = await getEventsFromIcsUrl(url);
           
           if (!events || events.length === 0) {
@@ -200,7 +196,7 @@ function Home() {
             mb: 4,
           }}
         >
-          Plan your perfect schedule.
+          Find Events on Campus!
         </Typography>
         
         <Typography 
