@@ -94,11 +94,22 @@ function EventsList() {
     }
     
     if (!timeString.includes('+') && !timeString.includes('Z')) {
-      const sydneyOffsetHours = 10 ;
+      const sydneyOffsetHours = 10 + (isAustralianDaylightSaving(date) ? 1 : 0);
       date.setHours(date.getHours() + sydneyOffsetHours);
     }
     
     return date;
+  };
+  
+  const isAustralianDaylightSaving = (date) => {
+    const year = date.getFullYear();
+    const dstStart = new Date(year, 9, 1); // October 1
+    while (dstStart.getDay() !== 0) dstStart.setDate(dstStart.getDate() + 1);
+    
+    const dstEnd = new Date(year, 3, 1); // April 1
+    while (dstEnd.getDay() !== 0) dstEnd.setDate(dstEnd.getDate() + 1);
+    
+    return date >= dstStart || date < dstEnd;
   };
 
   const transformEvents = (events) => {
