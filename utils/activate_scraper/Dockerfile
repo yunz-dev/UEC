@@ -27,7 +27,6 @@ COPY requirements.txt /app/
 
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install -q -U google-generativeai
-RUN pip install python-dotenv
 
 RUN python -m playwright install
 

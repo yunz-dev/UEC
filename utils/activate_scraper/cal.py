@@ -1,5 +1,6 @@
 import re
 import urllib.parse
+from categoriser import Categoriser
 from datetime import datetime
 from typing import Dict
 
@@ -44,7 +45,7 @@ def event_adapter(cal_data: CalendarData, url: str) -> EventData:
         start_time=cal_data["start_time"],
         end_time=cal_data["end_time"],
         cost=0,
-        category=[],
+        category=Categoriser.categorise(cal_data["summary"]),
         summary=cal_data["summary"],
         description=cal_data["description"],
         link=url,

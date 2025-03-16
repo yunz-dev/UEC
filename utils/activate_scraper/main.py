@@ -1,4 +1,5 @@
 from cal import event_adapter, extract_event_data
+from categoriser import Categoriser
 from db import upsert_event
 from scraper import getEventsFromPage, getIcsUrl, getPageCount
 
