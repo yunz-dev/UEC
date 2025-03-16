@@ -81,7 +81,7 @@ function Home() {
           
           setStatus(`Found ${events.length} events in calendar`);
           
-          // Redirect to the calendar page
+          // Redirect to the events page
           setTimeout(() => {
             setIsFetching(false);
             window.location.href = '/events';
@@ -196,7 +196,7 @@ function Home() {
             mb: 4,
           }}
         >
-          Find Events on Campus!
+          UniSync
         </Typography>
         
         <Typography 
@@ -316,7 +316,7 @@ function Home() {
         disabled={isFetching}
         startIcon={isFetching ? <CircularProgress size={20} color="inherit" /> : null}
       >
-        {!isFetching ? "Let's Plan!" : status}
+        {!isFetching ? "Let's go!" : status}
       </Button>
       
       {errorMessage && (

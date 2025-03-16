@@ -1,74 +1,60 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { 
+  Typography, 
+  Box, 
+  Paper, 
+  CircularProgress, 
+  Button, 
+  Alert, 
+  Card, 
+  CardContent, 
+  Chip, 
+  Divider 
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+import PlaceIcon from '@mui/icons-material/Place';
 
-const EventCard = ({ title, startTime, duration, location, description, category }) => {
-  const getEventColor = () => {
-    const categoryColors = {
-      'Uncategoried': 'bg-blue-600',
-      'Meeting': 'bg-purple-600',
-      'Social': 'bg-green-600',
-      'Academic': 'bg-amber-600',
-      'Sports': 'bg-red-600'
+const EventCard = styled(Card)(({ theme, category }) => {
+  const getCategoryColor = () => {
+    const categories = {
+      'Unknown': '#9e9e9e',
+      'Sport': '#2196f3',
+      'Cultural': '#ff9800',
+      'Academic': '#4caf50',
+      'Networking': '#9c27b0',
+      'Gaming': '#f44336',
+      'Health': '#00bcd4'
     };
     
-    if (category && categoryColors[category]) {
-      return categoryColors[category];
-    }
-    
-    const colors = Object.values(categoryColors);
-    const hash = title.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return colors[hash % colors.length];
+    return categories[category] || categories['Unknown'];
   };
-
-  const formatDuration = () => {
-    const hours = Math.floor(duration);
-    const minutes = Math.round((duration - hours) * 60);
-    
-    if (hours === 0) {
-      return `${minutes}min`;
-    } else if (minutes === 0) {
-      return `${hours}hr`;
-    } else {
-      return `${hours}hr ${minutes}min`;
+  
+  return {
+    marginBottom: theme.spacing(2),
+    position: 'relative',
+    borderLeft: `5px solid ${getCategoryColor()}`,
+    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: theme.shadows[4],
     }
   };
+});
 
-  return (
-    <div
-      className={`flex flex-col rounded-lg p-4 mb-4 text-sm leading-5 shadow-md hover:shadow-lg transition-shadow border border-white/30 ${getEventColor()}`}
-    >
-      <p className="font-semibold text-white text-base">{title}</p>
-      
-      <div className="flex flex-col space-y-2 mt-2">
-        <p className="text-white">
-          {new Date(1970, 0, 1, startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-          {' - '}
-          {new Date(1970, 0, 1, startTime + duration).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-          {' '}
-          <span className="text-white/80">({formatDuration()})</span>
-        </p>
-        
-        {location && (
-          <p className="text-white opacity-90">
-            📍 {location}
-          </p>
-        )}
-        
-        {category && category !== 'Event' && (
-          <span className="inline-flex items-center rounded-full bg-white bg-opacity-25 px-2 py-1 text-xs font-medium text-white self-start">
-            {category}
-          </span>
-        )}
-        
-        {description && description.length > 0 && (
-          <p className="mt-1 text-white opacity-80">
-            {description.length > 150 ? `${description.substring(0, 150)}...` : description}
-          </p>
-        )}
-      </div>
-    </div>
-  );
-};
+const EventCategoryChip = styled(Chip)(({ theme }) => ({
+  position: 'absolute',
+  top: theme.spacing(2),
+  right: theme.spacing(2),
+  fontSize: '0.75rem',
+}));
+
+const DateHeader = styled(Typography)(({ theme }) => ({
+  marginBottom: theme.spacing(3),
+  paddingBottom: theme.spacing(1),
+  borderBottom: `1px solid ${theme.palette.divider}`,
+  fontWeight: 500,
+}));
 
 function EventsList() {
   const [events, setEvents] = useState([]);
@@ -139,6 +125,19 @@ function EventsList() {
     .sort((a, b) => a.date - b.date);
   };
 
+  const formatDuration = (duration) => {
+    const hours = Math.floor(duration);
+    const minutes = Math.round((duration - hours) * 60);
+    
+    if (hours === 0) {
+      return `${minutes}min`;
+    } else if (minutes === 0) {
+      return `${hours}hr`;
+    } else {
+      return `${hours}hr ${minutes}min`;
+    }
+  };
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -191,7 +190,6 @@ function EventsList() {
     fetchEvents();
   }, []);
 
-
   const groupedEvents = events.reduce((groups, event) => {
     const dateKey = event.dateFormatted;
     if (!groups[dateKey]) {
@@ -202,63 +200,121 @@ function EventsList() {
   }, {});
 
   return (
-    <div className="mt-8 w-full max-w-3xl mx-auto px-4">
-      <h1 className="text-2xl font-bold text-center mb-4">Events on Campus</h1>
-      
-      {status && (
-        <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-md p-2 mb-4 text-center">
-          <p className="text-sm">{status}</p>
-        </div>
-      )}
+    <Box 
+      sx={{ 
+        width: '100%', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center',
+        mt: 6,
+        mb: 8,
+        px: 2,
+      }}
+    >
+      <Box sx={{ maxWidth: 800, width: '100%' }}>
+        <Typography 
+          variant="h2" 
+          component="h1"
+          sx={{ 
+            fontSize: { xs: '2rem', md: '3rem' },
+            fontWeight: 'bold',
+            textAlign: 'center',
+            color: 'primary.main',
+            mb: 4,
+          }}
+        >
+          Events on Campus
+        </Typography>
+        
+        {status && (
+          <Alert severity="info" sx={{ mb: 3 }}>
+            {status}
+          </Alert>
+        )}
 
-      {loading ? (
-        <div className="text-center my-8">Loading events...</div>
-      ) : error ? (
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-md p-4 my-6">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm">{error}</p>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div>
-          {Object.keys(groupedEvents).length > 0 ? (
-            Object.keys(groupedEvents).sort().map(dateKey => (
-              <div key={dateKey} className="mb-8">
-                <h2 className="text-lg font-medium mb-4">{dateKey}</h2>
-                <div className="space-y-4">
-                  {groupedEvents[dateKey].map((event) => (
-                    <EventCard
-                      key={event.id}
-                      title={event.title}
-                      startTime={event.startTime}
-                      duration={event.duration}
-                      location={event.location}
-                      description={event.description}
-                      category={event.category}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-center py-8 text-gray-500">No events found</div>
-          )}
-        </div>
-      )}
-      
-      <div className="flex justify-center mt-8 mb-8">
-        <Link to="/" className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-          Back to Home
-        </Link>
-      </div>
-    </div>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Alert severity="warning" sx={{ my: 3 }}>
+            {error}
+          </Alert>
+        ) : (
+          <Box>
+            {Object.keys(groupedEvents).length > 0 ? (
+              Object.keys(groupedEvents).sort().map(dateKey => (
+                <Box key={dateKey} sx={{ mb: 5 }}>
+                  <DateHeader variant="h5">
+                    {dateKey}
+                  </DateHeader>
+                  <Box sx={{ mb: 2 }}>
+                    {groupedEvents[dateKey].map((event) => (
+                      <EventCard key={event.id} category={event.category} elevation={2}>
+                        <CardContent sx={{ p: 3 }}>
+                          <Typography variant="h6" component="h3" fontWeight="600" gutterBottom>
+                            {event.title}
+                          </Typography>
+                          
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                            {new Date(1970, 0, 1, event.startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                            {' - '}
+                            {new Date(1970, 0, 1, event.startTime + event.duration).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                            {' '}
+                            <span>({formatDuration(event.duration)})</span>
+                          </Typography>
+                          
+                          {event.location && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+                              <PlaceIcon fontSize="small" color="action" sx={{ mr: 0.5 }} />
+                              <Typography variant="body2" color="text.secondary">
+                                {event.location}
+                              </Typography>
+                            </Box>
+                          )}
+                          
+                          {event.description && event.description.length > 0 && (
+                            <Typography variant="body2" sx={{ mt: 1.5 }}>
+                              {event.description.length > 150 ? `${event.description.substring(0, 150)}...` : event.description}
+                            </Typography>
+                          )}
+                          
+                          {event.category && event.category !== 'Event' && (
+                            <EventCategoryChip label={event.category} size="small" />
+                          )}
+                        </CardContent>
+                      </EventCard>
+                    ))}
+                  </Box>
+                </Box>
+              ))
+            ) : (
+              <Paper sx={{ p: 5, textAlign: 'center' }}>
+                <Typography color="text.secondary">No events found</Typography>
+              </Paper>
+            )}
+          </Box>
+        )}
+        
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+          <Button
+            component={Link}
+            to="/"
+            variant="contained"
+            color="primary"
+            size="large"
+            sx={{ 
+              fontWeight: 600,
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              px: 4,
+              py: 1,
+            }}
+          >
+            Back to Home
+          </Button>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 
