@@ -1,7 +1,7 @@
 from datetime import datetime, timezone, timedelta
 from os import getenv
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from pydantic import BaseModel
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
@@ -55,7 +55,7 @@ def event_clashes(event: dict, clashes: List[Interval]):
 
 # Todo add response model
 @app.get("/events")
-def get_events(start_time: datetime = None, end_time: datetime = None, ics_url: str = None):
+def get_events(response: Response, start_time: datetime = None, end_time: datetime = None, ics_url: str = None):
     now = datetime.now(timezone.utc)
     if start_time is None:
         start_time = now
@@ -67,6 +67,7 @@ def get_events(start_time: datetime = None, end_time: datetime = None, ics_url: 
     }, {'_id': 0})
     clashes = find_clashes(ics_url) if ics_url else []
 
+    response.headers["Access-Control-Allow-Origin"] = "*"
     return {
         "events": [
             EventData(
