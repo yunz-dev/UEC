@@ -7,16 +7,11 @@ const API_URL = 'http://localhost:8000';
  * @param {Object} params - Query parameters
  * @param {Date} params.start_time - Start time to filter events
  * @param {Date} params.end_time - End time to filter events
+ * @param {string} params.end_time - End time to filter events
  * @returns {Promise<Array>} List of events
  */
 export const getEvents = async (params = {}) => {
   try {
-    // Ensure we have at least one of start_time or end_time
-    if (!params.start_time && !params.end_time) {
-      // Default to showing events from now
-      params.start_time = new Date().toISOString();
-    }
-    
     const response = await axios.get(`${API_URL}/events`, { params });
     return response.data.events;
   } catch (error) {
