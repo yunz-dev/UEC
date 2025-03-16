@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000';
+const API_URL = 'https://uec-hb09.onrender.com';
 
 /**
  * Get events from the backend
