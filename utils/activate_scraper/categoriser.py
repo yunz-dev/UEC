@@ -1,26 +1,31 @@
 import os
 import google.generativeai as genai
-from dotenv import load_dotenv
-
-load_dotenv()
 
 class Categoriser:
     def __init__(self):
         genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
         model = genai.GenerativeModel('gemini-1.5-flash')
         self.chat = model.start_chat(history=[])
+        
+    def getOrCreateInstance():
+        try:
+            Categoriser._instance_
+        except:
+            Categoriser._instance_ = Categoriser()
+        return Categoriser._instance_
 
-    def categorise(self, summary_text):
+    def categorise(summary_text):
         try:
             system_prompt = """You are an event categorizer. You will receive an event summary and must categorize it into any of these categories: {Unknown, Sport, Cultural, Academic, Networking, Gaming, Health}. An event can belong to multiple categories. If the summary given is empty or unable to be deciphered, you must categorise it as Unknown. If the category is Unknown, the event cannot belong to any other categories. Respond with only the categories, delimitted by a comma if it belongs to many. The following is the event summary to categorize:\n"""
-            if Categoriser._instance_ == None:
-                Categoriser._instance_ = Categoriser()
-            response = Categoriser._instance_.chat.send_message(str(system_prompt + summary_text), stream=False)
+            response = Categoriser.getOrCreateInstance().chat.send_message(str(system_prompt + summary_text), stream=False)
             return response.text.strip().split(", ")
         except:
             return []
   
 # FOR TEST PURPOSES
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # if __name__ == "__main__":
 #     Categoriser._instance_ = Categoriser()

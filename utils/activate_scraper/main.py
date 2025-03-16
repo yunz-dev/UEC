@@ -7,7 +7,6 @@ ACTIVATE_UTS = "https://www.activateuts.com.au"
 UTS_EVENT_PAGE = "https://www.activateuts.com.au/events"
 PAGE_INCREMENT = "/?orderby=featured&page_num="
 if __name__ == "__main__":
-    Categoriser._instance_ = Categoriser()
     print("Finding Page Count...", end="")
     pages = getPageCount(UTS_EVENT_PAGE)
     print(pages)
