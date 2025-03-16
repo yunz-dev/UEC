@@ -82,26 +82,56 @@ function EventsList() {
     setSelectedEvents(newSelectedEvents);
   };
 
+  const parseSydneyTime = (timeString) => {
+    const date = new Date(timeString);
+    
+    if (isNaN(date.getTime())) {
+      if (!timeString.includes('+')) {
+        timeString = timeString + '+10:00';
+        return new Date(timeString);
+      }
+      return new Date();
+    }
+    
+    if (!timeString.includes('+') && !timeString.includes('Z')) {
+      const sydneyOffsetHours = 10 + (isAustralianDaylightSaving(date) ? 1 : 0);
+      date.setHours(date.getHours() + sydneyOffsetHours);
+    }
+    
+    return date;
+  };
+  
+  const isAustralianDaylightSaving = (date) => {
+    const year = date.getFullYear();
+    const dstStart = new Date(year, 9, 1); // October 1
+    while (dstStart.getDay() !== 0) dstStart.setDate(dstStart.getDate() + 1);
+    
+    const dstEnd = new Date(year, 3, 1); // April 1
+    while (dstEnd.getDay() !== 0) dstEnd.setDate(dstEnd.getDate() + 1);
+    
+    return date >= dstStart || date < dstEnd;
+  };
+
   const transformEvents = (events) => {
-    return events.map(event => {
-      try {
-        let startDate, endDate;
-
-        if (event.start_time) {
-          startDate = new Date(event.start_time);
-        } else if (event.start) {
-          startDate = new Date(event.start);
-        } else {
-          return null;
-        }
-
-        if (event.end_time) {
-          endDate = new Date(event.end_time);
-        } else if (event.end) {
-          endDate = new Date(event.end);
-        } else {
-          endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
-        }
+      return events.map(event => {
+        try {
+          let startDate, endDate;
+    
+          if (event.start_time) {
+            startDate = parseSydneyTime(event.start_time);
+          } else if (event.start) {
+            startDate = parseSydneyTime(event.start);
+          } else {
+            return null;
+          }
+    
+          if (event.end_time) {
+            endDate = parseSydneyTime(event.end_time);
+          } else if (event.end) {
+            endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+          } else {
+            endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+          }
 
         if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
           return null;
@@ -145,7 +175,6 @@ function EventsList() {
       .filter(event => event !== null)
       .sort((a, b) => a.date - b.date);
   };
-
   const formatDuration = (duration) => {
     const hours = Math.floor(duration);
     const minutes = Math.round((duration - hours) * 60);
