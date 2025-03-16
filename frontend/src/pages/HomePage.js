@@ -74,7 +74,7 @@ function Home() {
             setStatus("No events found in this calendar");
             setTimeout(() => {
               setIsFetching(false);
-              window.location.href = '/calendar';
+              window.location.href = '/events';
             }, 1000);
             return;
           }
@@ -84,7 +84,7 @@ function Home() {
           // Redirect to the calendar page
           setTimeout(() => {
             setIsFetching(false);
-            window.location.href = '/calendar';
+            window.location.href = '/events';
           }, 800);
         } catch (error) {
           setErrorMessage("Error fetching events from URL: " + error.message);
@@ -112,7 +112,7 @@ function Home() {
             setStatus("No events found in this calendar file");
             setTimeout(() => {
               setIsFetching(false);
-              window.location.href = '/calendar';
+              window.location.href = '/events';
             }, 1000);
             return;
           }
@@ -126,7 +126,7 @@ function Home() {
           // Redirect to the calendar page
           setTimeout(() => {
             setIsFetching(false);
-            window.location.href = '/calendar';
+            window.location.href = '/events';
           }, 800);
         } catch (error) {
           setErrorMessage("Error processing ICS file: " + error.message);
