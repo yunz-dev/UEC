@@ -10,12 +10,15 @@ import {
   Card,
   CardContent,
   Chip,
-  Divider
+  Divider,
+  Checkbox,
+  Fab
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import PlaceIcon from '@mui/icons-material/Place';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 
-const EventCard = styled(Card)(({ theme, category }) => {
+const EventCard = styled(Card)(({ theme, category, isSelected }) => {
   const getCategoryColor = () => {
     const categories = {
       'Unknown': '#9e9e9e',
@@ -36,6 +39,8 @@ const EventCard = styled(Card)(({ theme, category }) => {
     borderLeft: `5px solid ${getCategoryColor()}`,
     transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
     cursor: 'pointer',
+    backgroundColor: isSelected ? 'rgba(33, 150, 243, 0.1)' : 'inherit',
+    border: isSelected ? '1px solid #2196f3' : 'none',
     '&:hover': {
       transform: 'translateY(-2px)',
       boxShadow: theme.shadows[4],
@@ -63,6 +68,19 @@ function EventsList() {
   const [error, setError] = useState(null);
   const [status, setStatus] = useState('');
   const [icsUrl, setIcsUrl] = useState('');
+  const [selectedEvents, setSelectedEvents] = useState(new Set());
+
+  const toggleEventSelection = (eventId, e) => {
+    e.stopPropagation();
+    
+    const newSelectedEvents = new Set(selectedEvents);
+    if (newSelectedEvents.has(eventId)) {
+      newSelectedEvents.delete(eventId);
+    } else {
+      newSelectedEvents.add(eventId);
+    }
+    setSelectedEvents(newSelectedEvents);
+  };
 
   const transformEvents = (events) => {
     return events.map(event => {
@@ -202,6 +220,54 @@ function EventsList() {
     return groups;
   }, {});
 
+  const exportToICS = () => {
+    if (selectedEvents.size === 0) return;
+
+    let icsContent = 
+`BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//UEC Events//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+`;
+
+    events.forEach(event => {
+      if (selectedEvents.has(event.id)) {
+        const startDate = new Date(event.date);
+        const endDate = new Date(startDate.getTime() + event.duration * 60 * 60 * 1000);
+        
+        const formatDateForICS = (date) => {
+          return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/g, '');
+        };
+        
+        icsContent += 
+`BEGIN:VEVENT
+UID:${event.id}@uec-events
+DTSTAMP:${formatDateForICS(new Date())}
+DTSTART:${formatDateForICS(startDate)}
+DTEND:${formatDateForICS(endDate)}
+SUMMARY:${event.title}
+${event.description ? `DESCRIPTION:${event.description.replace(/\n/g, '\\n')}` : ''}
+${event.location ? `LOCATION:${event.location}` : ''}
+${event.link ? `URL:${event.link}` : ''}
+END:VEVENT
+`;
+      }
+    });
+    
+    icsContent += 'END:VCALENDAR';
+    
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'campus_events.ics');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Box
       sx={{
@@ -212,6 +278,7 @@ function EventsList() {
         mt: 6,
         mb: 8,
         px: 2,
+        position: 'relative',
       }}
     >
       <Box sx={{ maxWidth: 800, width: '100%' }}>
@@ -228,6 +295,12 @@ function EventsList() {
         >
           Events on Campus
         </Typography>
+
+        {selectedEvents.size > 0 && (
+          <Alert severity="info" sx={{ mb: 3 }}>
+            {selectedEvents.size} event{selectedEvents.size !== 1 ? 's' : ''} selected
+          </Alert>
+        )}
 
         {status && (
           <Alert severity="info" sx={{ mb: 3 }}>
@@ -257,13 +330,30 @@ function EventsList() {
                         key={event.id}
                         category={event.category}
                         elevation={2}
-                        onClick={() => {
-                          if (event.link) {
+                        isSelected={selectedEvents.has(event.id)}
+                        onClick={(e) => {
+                          if (event.link && !e.target.closest('.select-control')) {
                             window.open(event.link, '_blank', 'noopener,noreferrer');
                           }
                         }}
                       >
                         <CardContent sx={{ p: 3 }}>
+                          <Box 
+                            className="select-control"
+                            sx={{ 
+                              position: 'absolute',
+                              top: 8,
+                              right: 8,
+                              zIndex: 10
+                            }}
+                            onClick={(e) => toggleEventSelection(event.id, e)}
+                          >
+                            <Checkbox 
+                              checked={selectedEvents.has(event.id)}
+                              color="primary"
+                            />
+                          </Box>
+                          
                           <Typography variant="h6" component="h3" fontWeight="600" gutterBottom>
                             {event.title}
                           </Typography>
@@ -314,7 +404,7 @@ function EventsList() {
           </Box>
         )}
 
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 5 }}>
           <Button
             component={Link}
             to="/"
@@ -330,8 +420,42 @@ function EventsList() {
           >
             Back to Home
           </Button>
+          
+          {selectedEvents.size > 0 && (
+            <Button
+              variant="contained"
+              color="secondary"
+              size="large"
+              onClick={exportToICS}
+              startIcon={<CloudDownloadIcon />}
+              sx={{
+                fontWeight: 600,
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                px: 4,
+                py: 1,
+              }}
+            >
+              Export {selectedEvents.size} Event{selectedEvents.size !== 1 ? 's' : ''} to Calendar
+            </Button>
+          )}
         </Box>
       </Box>
+      
+      {selectedEvents.size > 0 && (
+        <Fab
+          color="secondary"
+          aria-label="export events"
+          onClick={exportToICS}
+          sx={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            display: { md: 'none' }
+          }}
+        >
+          <CloudDownloadIcon />
+        </Fab>
+      )}
     </Box>
   );
 }
