@@ -10,6 +10,8 @@ MONGO_URI #
 ```
 ### install dependencies
 `pip install -r requirements.txt`
+### install gemini libraries
+`pip install -q -U google-generativeai`
 ### install browsers
 `python -m playwright install`
 ### run script
