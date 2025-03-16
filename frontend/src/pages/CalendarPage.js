@@ -207,20 +207,15 @@ function Calendar() {
         console.log("Fetched events from backend:", data.events);
 
         if (Array.isArray(data.events) && data.events.length > 0) {
-          setStatus(`Successfully loaded ${data.events.length} events`);
+          setStatus(`Successfully found ${data.events.length} events!!`);
           const calendarEvents = transformEventsForCalendar(data.events);
           setEvents(calendarEvents);
         } else {
-          console.log("No events found, using mock data");
-          setStatus("No events found in database. Showing example data.");
-          const mockEvents = transformEventsForCalendar(generateMockEvents());
-          setEvents(mockEvents);
+          console.log("No events found");
         }
       } catch (error) {
         console.error("Error fetching events:", error);
         setError(`Failed to fetch events: ${error.message}`);
-        const mockEvents = transformEventsForCalendar(generateMockEvents());
-        setEvents(mockEvents);
       } finally {
         setLoading(false);
       }
@@ -253,34 +248,7 @@ function Calendar() {
 
   return (
     <div className="mt-8 w-full max-w-6xl mx-auto px-4">
-      <h1 className="text-2xl font-bold text-center mb-4">Your Calendar</h1>
-
-      {/* Add form for ICS URL input */}
-      <div className="mb-6">
-        <form onSubmit={handleIcsUrlSubmit} className="flex flex-col sm:flex-row gap-3">
-          <div className="flex-grow">
-            <label htmlFor="ics-url" className="sr-only">Calendar URL</label>
-            <input
-              type="text"
-              id="ics-url"
-              value={icsUrl}
-              onChange={(e) => setIcsUrl(e.target.value)}
-              placeholder="Paste your iCal URL here (e.g., https://timetable.sydney.edu.au/...)"
-              className="px-3 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <button 
-            type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Load Calendar
-          </button>
-        </form>
-        <p className="mt-1 text-sm text-gray-500">
-          Enter your iCal URL to display your calendar events
-        </p>
-      </div>
-
+      <h1 className="text-2xl font-bold text-center mb-4">Events on Campus</h1>
       {status && (
         <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-md p-2 mb-4 text-center">
           <p className="text-sm">{status}</p>
