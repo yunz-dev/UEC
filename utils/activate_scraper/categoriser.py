@@ -23,9 +23,9 @@ class Categoriser:
             return []
   
 # FOR TEST PURPOSES
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv()
 
 # if __name__ == "__main__":
 #     Categoriser._instance_ = Categoriser()
