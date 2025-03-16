@@ -1,7 +1,7 @@
-# UEC (University Event Calendar)
+# LectureFree
 
 ## Description
-UEC is a web application designed for the Unihack Hackathon 2025. The app helps students at UTS find campus events that they can attend in between their classes. By inputting a URL to an ICS calendar file, users can view all events that fit in the gaps between their scheduled classes.
+LectureFree is a web application designed for the Unihack Hackathon 2025. The app helps students at UTS find campus events that they can attend in between their classes. By inputting a URL to an ICS calendar file, users can view all events that fit in the gaps between their scheduled classes.
 
 ## Technologies Used
 - **FastAPI**: Web framework for the backend
